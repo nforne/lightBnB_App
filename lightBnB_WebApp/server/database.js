@@ -2,6 +2,7 @@ const properties = require('./json/properties.json');
 const users = require('./json/users.json');
 
 const { Pool } = require('pg');
+const { max } = require('pg/lib/defaults');
 const config = {
   user: 'labber',
   password: 'labber',
@@ -81,7 +82,7 @@ exports.getUserWithId = getUserWithId;
 //   user.id = userId;
 //   users[userId] = user;
 //   return Promise.resolve(user);
-// }   //------------------------------------------------------////////////////////
+// }   
 
 const addUser = (user) => {
  let qstring = `INSERT INTO users (name, email , password ) 
@@ -148,13 +149,98 @@ exports.getAllReservations = getAllReservations;
 // }
 
 const getAllProperties = (options, limit = 10) => {
- return pg
-    .query(`SELECT * FROM properties LIMIT $1`, [limit])
-    .then((result) => 
-      result.rows)
-    .catch((err) => {
-      console.log(err.message);
-      });
+
+  // potential structure of options object
+  /*{
+    city,
+    owner_id,
+    minimum_price_per_night,
+    maximum_price_per_night,
+    minimum_rating;
+  }*/
+
+ // 1
+ const queryParams = [];
+ // 2
+ let queryString = `
+ SELECT properties.*, avg(property_reviews.rating) as average_rating
+ FROM properties
+ JOIN property_reviews ON properties.id = property_id
+ `;
+
+
+ // 3
+ if (options.city && options.owner_id) {
+   queryParams.push(`%${options.city}%`);
+   queryParams.push(`${options.owner_id}`);
+   queryString += `WHERE city LIKE $${queryParams.length - 1} 
+                   AND properties.owner_id = $${queryParams.length}`;
+ } else if (options.city) {
+
+  queryParams.push(`%${options.city}%`);
+  queryString += `WHERE city LIKE $${queryParams.length - 1}`;              
+
+ }
+
+ 
+// additions
+
+
+if (options.minimum_price_per_night && options.maximum_price_per_night && options.minimum_rating) {
+
+  queryParams.push(`${options.minimum_rating}`);
+  queryParams.push(`${options.minimum_price_per_night}`);
+  queryParams.push(`${options.maximum_price_per_night}`);
+  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length - 2} 
+                  AND properties.price_per_night >= $${queryParams.length - 1} 
+                  AND properties.price_per_night <= $${queryParams.length}`;
+
+} else if (options.minimum_price_per_night && options.minimum_rating) {
+  queryParams.push(`${options.minimum_rating}`);
+  queryParams.push(`${options.minimum_price_per_night}`);  
+  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length - 1} 
+                  AND  properties.price_per_night >= $${queryParams.length}`;
+
+} else if (options.maximum_price_per_night && options.minimum_rating) {
+  queryParams.push(`${options.minimum_rating}`);
+  queryParams.push(`${options.maximum_price_per_night}`);
+  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length - 1}          
+                  AND properties.price_per_night <= $${queryParams.length}`;
+
+} else if (options.minimum_price_per_night && options.maximum_price_per_night) {
+  queryParams.push(`${options.minimum_price_per_night}`);
+  queryParams.push(`${options.maximum_price_per_night}`);
+  queryString += `HAVING properties.price_per_night >= $${queryParams.length - 1} 
+                  AND properties.price_per_night <= $${queryParams.length}`;
+
+} else if (options.minimum_rating) {
+  queryParams.push(`${options.minimum_rating}`);  
+  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length}`;                  
+
+} else if (options.minimum_price_per_night) {
+  queryParams.push(`${options.minimum_price_per_night}`);
+  queryString += `HAVING properties.price_per_night >= $${queryParams.length}`; 
+
+} else if (options.maximum_price_per_night) {
+
+  queryParams.push(`${options.maximum_price_per_night}`);
+  queryString += `HAVING properties.price_per_night <= $${queryParams.length}`; 
+
+}
+                  
+ // 4
+ queryParams.push(limit);
+ queryString += `
+ GROUP BY properties.id
+ ORDER BY cost_per_night
+ LIMIT $${queryParams.length};`;
+
+ // 5
+console.log(queryString, queryParams);
+
+ // 6
+ return pg.query(queryString, queryParams).then((res) => res.rows);
+
 };
 
 exports.getAllProperties = getAllProperties;
@@ -170,4 +256,6 @@ const addProperty = function(property) {
   properties[propertyId] = property;
   return Promise.resolve(property);
 }
+
+
 exports.addProperty = addProperty;
