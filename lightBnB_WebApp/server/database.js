@@ -189,7 +189,7 @@ if (options.minimum_price_per_night && options.maximum_price_per_night && option
   queryParams.push(`${options.minimum_rating}`);
   queryParams.push(`${options.minimum_price_per_night}`);
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length - 2} 
+  queryString += ` AND avg(property_reviews.rating) >= $${queryParams.length - 2} 
                   AND properties.price_per_night >= $${queryParams.length - 1} 
                   AND properties.price_per_night <= $${queryParams.length}`;
                   console.log(queryString);
@@ -197,38 +197,38 @@ if (options.minimum_price_per_night && options.maximum_price_per_night && option
 } else if (options.minimum_price_per_night && options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);
   queryParams.push(`${options.minimum_price_per_night}`);  
-  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length - 1} 
-                  AND  properties.price_per_night >= $${queryParams.length}`;
+  queryString += ` AND avg(property_reviews.rating) >= $${queryParams.length - 1} 
+                  AND  properties.cost_per_night >= $${queryParams.length}`;
                   console.log(queryString);
 
 } else if (options.maximum_price_per_night && options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length - 1}          
-                  AND properties.price_per_night <= $${queryParams.length}`;
+  queryString += ` AND avg(property_reviews.rating) >= $${queryParams.length - 1}          
+                  AND properties.cost_per_night <= $${queryParams.length}`;
                   console.log(queryString);
 
 } else if (options.minimum_price_per_night && options.maximum_price_per_night) {
   queryParams.push(`${options.minimum_price_per_night}`);
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += ` HAVING properties.price_per_night >= $${queryParams.length - 1} 
-                  AND properties.price_per_night <= $${queryParams.length}`;
+  queryString += ` AND properties.cost_per_night >= $${queryParams.length - 1} 
+                  AND properties.cost_per_night <= $${queryParams.length}`;
                   console.log(queryString);
 
 } else if (options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);  
-  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length}`;
+  queryString += ` AND avg(property_reviews.rating) >= $${queryParams.length}`;
   console.log(queryString);    
 
 } else if (options.minimum_price_per_night) {
   queryParams.push(`${options.minimum_price_per_night}`);
-  queryString += ` HAVING properties.price_per_night >= $${queryParams.length}`;
+  queryString += ` AND properties.cost_per_night >= $${queryParams.length}`;
   console.log(queryString); 
 
 } else if (options.maximum_price_per_night) {
 
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += ` HAVING properties.price_per_night <= $${queryParams.length}`;
+  queryString += ` AND properties.cost_per_night <= $${queryParams.length}`;
   console.log(queryString); 
 
 }
