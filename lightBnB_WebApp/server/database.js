@@ -165,20 +165,18 @@ const getAllProperties = (options, limit = 10) => {
  let queryString = `
  SELECT properties.*, avg(property_reviews.rating) as average_rating
  FROM properties
- JOIN property_reviews ON properties.id = property_id
- `;
-
+ JOIN property_reviews ON properties.id = property_id`;
 
  // 3
  if (options.city && options.owner_id) {
    queryParams.push(`%${options.city}%`);
    queryParams.push(`${options.owner_id}`);
-   queryString += `WHERE city LIKE $${queryParams.length - 1} 
+   queryString += ` WHERE city LIKE $${queryParams.length - 1} 
                    AND properties.owner_id = $${queryParams.length}`;
  } else if (options.city) {
 
   queryParams.push(`%${options.city}%`);
-  queryString += `WHERE city LIKE $${queryParams.length - 1}`;              
+  queryString += ` WHERE city LIKE $${queryParams.length - 1}`;              
 
  }
 
@@ -191,40 +189,47 @@ if (options.minimum_price_per_night && options.maximum_price_per_night && option
   queryParams.push(`${options.minimum_rating}`);
   queryParams.push(`${options.minimum_price_per_night}`);
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length - 2} 
+  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length - 2} 
                   AND properties.price_per_night >= $${queryParams.length - 1} 
                   AND properties.price_per_night <= $${queryParams.length}`;
+                  console.log(queryString);
 
 } else if (options.minimum_price_per_night && options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);
   queryParams.push(`${options.minimum_price_per_night}`);  
-  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length - 1} 
+  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length - 1} 
                   AND  properties.price_per_night >= $${queryParams.length}`;
+                  console.log(queryString);
 
 } else if (options.maximum_price_per_night && options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length - 1}          
+  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length - 1}          
                   AND properties.price_per_night <= $${queryParams.length}`;
+                  console.log(queryString);
 
 } else if (options.minimum_price_per_night && options.maximum_price_per_night) {
   queryParams.push(`${options.minimum_price_per_night}`);
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += `HAVING properties.price_per_night >= $${queryParams.length - 1} 
+  queryString += ` HAVING properties.price_per_night >= $${queryParams.length - 1} 
                   AND properties.price_per_night <= $${queryParams.length}`;
+                  console.log(queryString);
 
 } else if (options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);  
-  queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length}`;                  
+  queryString += ` HAVING avg(property_reviews.rating) >= $${queryParams.length}`;
+  console.log(queryString);    
 
 } else if (options.minimum_price_per_night) {
   queryParams.push(`${options.minimum_price_per_night}`);
-  queryString += `HAVING properties.price_per_night >= $${queryParams.length}`; 
+  queryString += ` HAVING properties.price_per_night >= $${queryParams.length}`;
+  console.log(queryString); 
 
 } else if (options.maximum_price_per_night) {
 
   queryParams.push(`${options.maximum_price_per_night}`);
-  queryString += `HAVING properties.price_per_night <= $${queryParams.length}`; 
+  queryString += ` HAVING properties.price_per_night <= $${queryParams.length}`;
+  console.log(queryString); 
 
 }
                   
@@ -236,6 +241,7 @@ if (options.minimum_price_per_night && options.maximum_price_per_night && option
  LIMIT $${queryParams.length};`;
 
  // 5
+console.log('//----------------------------------//////////////////////////////////////////////////---------------')
 console.log(queryString, queryParams);
 
  // 6
