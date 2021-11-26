@@ -176,7 +176,7 @@ const getAllProperties = (options, limit = 10) => {
  } else if (options.city) {
 
   queryParams.push(`%${options.city}%`);
-  queryString += ` WHERE city LIKE $${queryParams.length - 1}`;              
+  queryString += ` WHERE city LIKE $${queryParams.length}`;              
 
  }
 
